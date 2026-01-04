@@ -1,0 +1,54 @@
+import os
+from dotenv import load_dotenv
+from google import genai
+
+load_dotenv()
+
+API_KEY = os.getenv("GEMINI_API_KEY")
+if not API_KEY:
+    raise ValueError("GEMINI_API_KEY not found")
+
+client = genai.Client(api_key=API_KEY)
+
+
+
+def get_ai_advice(data):
+    #for cm into meter for BMI calculation
+    height_m = data.height / 100
+
+    bmi = data.weight / (height_m * height_m)
+
+    prompt = f"""
+You are a health lifestyle advisor (not a doctor).
+
+Patient data:
+- Calories intake per day: {data.calories} kcal
+- Sleep duration: {data.sleep_hours} hours
+- Weight: {data.weight} kg
+- Height: {height_m:.2f} cm 
+- BMI: {bmi:.1f}
+
+Give:
+1. Diet advice
+2. Sleep improvement advice
+3. Physical activity advice
+4. Overall health summary
+
+Rules:
+- Do NOT give medical diagnosis
+- Use simple language
+- Use bullet points
+- Keep response under 200 words
+"""
+
+    response = client.models.generate_content(
+        model="models/gemini-2.5-flash",
+        contents=prompt
+    )
+
+    return response.text
+
+
+    #round of bmi code
+    
+    bmi = round(data.weight / (height_m ** 2), 2)
